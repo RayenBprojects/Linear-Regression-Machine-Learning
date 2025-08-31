@@ -1,32 +1,36 @@
 #include "../DataGen/DataGen.cpp"
 #include <cmath>
+#include <iostream>
 using namespace std;
 
 class Model{
 
     public:
 
-    Model(DataGen inputSet, float threshold){ // threshold is the max allowed square difference ratio before example deletion, 0 generations means infinite tries
+    Model(){ 
         mVariable = 0;
         bVariable = 0;
         trained = false;
 
+        data = false;
 
-        if (threshold > 1.1){
-            limit = threshold;
-        }
-        else{
-            limit = 1.1;
-        }
+    }
+
+    Model(DataGen inputSet){ 
+        mVariable = 0;
+        bVariable = 0;
+        trained = false;
 
         originalDataSet = inputSet;
 
         refinedDataSet = inputSet.copyData();
 
+        data = true;
+
     }
 
     void train(){
-        if (trained == true){
+        if (trained == true || !data){
             return;
         }
         float sumX = 0;
@@ -52,6 +56,16 @@ class Model{
         trained = true;
     }
 
+    void newInputSet(DataGen dataSet){
+        trained = false;
+        originalDataSet = dataSet;
+        refinedDataSet = dataSet.copyData();
+    }
+
+    bool isTrained(){
+        return trained;
+    }
+
     float evaluate(){ // returns sum of squares, the smaller the better, 0 if not trained
         if (!trained){
             return 0 ;
@@ -74,12 +88,12 @@ class Model{
 
     float bVariable;
 
-    float limit;
-
     DataGen originalDataSet;
 
     DataGen refinedDataSet;
 
     bool trained;
+
+    bool data;
 
 };

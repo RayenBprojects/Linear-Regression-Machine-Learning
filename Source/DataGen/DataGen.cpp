@@ -25,8 +25,6 @@ class DataList{
 class DataGen{
     public:
 
-    friend class DataGen;
-
     DataGen(float m = 0, float b = 0, int size = 1){
         mVariable = m;
         bVariable = b;
@@ -49,7 +47,7 @@ class DataGen{
     }
 
     ~DataGen(){
-        if (dataGenerated != NULL){
+        if (dataGenerated != false){
             cursor = firstExample;
             DataList *temp = cursor;
 
@@ -104,6 +102,12 @@ class DataGen{
         
         cursor = firstExample;
         dataGenerated = true;
+    }
+
+    void newData(float m, float b, float size){// must add way to delete old data and refresh, this is temporary
+        mVariable = m;
+        bVariable = b;
+        length = size;
     }
 
     DataGen copyData(){
@@ -204,6 +208,10 @@ class DataGen{
         else{
             return false;
         }
+    }
+
+    bool isGenerated(){
+        return dataGenerated;
     }
 
     private:
