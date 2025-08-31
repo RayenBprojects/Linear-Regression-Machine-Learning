@@ -129,15 +129,21 @@ int main(){
                     prediction.addText("PREDICTION\n",true);
                     prediction.addPrompt(predictionPrompt,predictionResponse,genericPredictionError,false, false);
                     // need input validation here
-                    prediction.addText("\nThe model predicts y = ",false);
+                    prediction.showPage();
+
+                    prediction.clearPage();
+                    prediction.addText("PREDICTION\n",true);
+                    prediction.addText("The model predicts y = ",false);
                     prediction.addText(to_string(model.predict(atof(predictionResponse))));
                     prediction.addText("Press any key to continue");
+                    prediction.showPage();
+                    
 
                 }
                 else{
                     // need error here
                 }
-                 while(!kbhit()){}
+                while(!kbhit()){}
                 getch();
                 break;
             }

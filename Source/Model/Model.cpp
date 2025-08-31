@@ -47,9 +47,12 @@ class Model{
                 sumY += originalDataSet.getLabel();
                 sumXY += originalDataSet.getFeature()*originalDataSet.getLabel();
                 sampleLength++;
+                originalDataSet.advanceCursor();
+            }
+            else{
+                originalDataSet.advanceCursor();
             }
         }
-
         mVariable = ((sumX)*sumY-sampleLength*sumXY)/(pow(sumX,2)-sampleLength*sumXSquared);
         bVariable = (1/sampleLength)*(sumY - mVariable*sumX);
 
@@ -60,6 +63,7 @@ class Model{
         trained = false;
         originalDataSet = dataSet;
         refinedDataSet = dataSet.copyData();
+        data = true;
     }
 
     bool isTrained(){

@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include <ctime>
 #include <cmath>
+#include <iostream>
+using namespace std;
 
 class DataList{
     private: 
@@ -75,7 +77,7 @@ class DataGen{
         float i=firstFeature;;
         for (int n = 0 ; n < length ; n++){
 
-            cursor->xFeature = i;
+            cursor->xFeature = n;
             if (float(rand()%101) >= (101-outlierProb)){
                 if (rand()%2 == 1){
                     cursor->yLabel = mVariable * i + bVariable + range * ((float(rand()%6) + 5)/100);
