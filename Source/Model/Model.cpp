@@ -23,17 +23,26 @@ class Model{
 
         originalDataSet = inputSet;
 
-        //refinedDataSet = inputSet.copyData();
-        refinedDataSet = inputSet;
-
         data = true;
 
     }
 
-    void train(){
-        if (trained == true || !data){
-            return;
+    void newInputSet(DataGen dataSet){
+        trained = false;
+
+        originalDataSet = dataSet;
+        mVariable = 0;
+        bVariable = 0;
+
+        data = true;
+    }
+
+    bool train(){
+
+        if(!data || originalDataSet.getLength() == 0){
+            return false;
         }
+
         float sumX = 0;
         float sumXSquared = 0;
         float sumY = 0;
@@ -42,7 +51,7 @@ class Model{
         float sampleLength = 0;
 
         for (int i = 0 ; i < length ; i++){
-            if (!(i%8 == 0)){
+            if (i%8 != 0){
                 sumX += originalDataSet.getFeature();
                 sumXSquared += pow(originalDataSet.getFeature(),2);
                 sumY += originalDataSet.getLabel();
@@ -54,18 +63,13 @@ class Model{
                 originalDataSet.advanceCursor();
             }
         }
+
         mVariable = ((sumX)*sumY-sampleLength*sumXY)/(pow(sumX,2)-sampleLength*sumXSquared);
         bVariable = (1/sampleLength)*(sumY - mVariable*sumX);
 
         trained = true;
-    }
-
-    void newInputSet(DataGen dataSet){
-        trained = false;
-        originalDataSet = dataSet;
-        //refinedDataSet = dataSet.copyData();
-        refinedDataSet = dataSet;
-        data = true;
+        originalDataSet.resetCursor();
+        return true;
     }
 
     bool isTrained(){
@@ -74,18 +78,23 @@ class Model{
 
     float evaluate(){ // returns sum of squares, the smaller the better, 0 if not trained
         if (!trained){
-            return 0 ;
+            return -1 ;
         }
 
         float sum = 0;
-        for (int i = 0 ; i < refinedDataSet.getLength() ; i++){
-            sum += pow(refinedDataSet.getFeature()*mVariable+bVariable-refinedDataSet.getLabel(),2);
+        for (int i = 0 ; i < originalDataSet.getLength() ; i++){
+            sum += pow(originalDataSet.getFeature()*mVariable+bVariable-originalDataSet.getLabel(),2);
         }
         return sum;
     }
 
     float predict(float feature){
-        return mVariable*feature+bVariable;
+        if(trained){
+            return mVariable*feature+bVariable;
+        }
+        else{
+            return 0;
+        }
     }
 
     private:
@@ -95,8 +104,6 @@ class Model{
     float bVariable;
 
     DataGen originalDataSet;
-
-    DataGen refinedDataSet;
 
     bool trained;
 

@@ -74,7 +74,7 @@ int main(){
     Model model;
     bool exitFlag = false;
 
-    do{ // SOLUTION TO CRASH, give em default constructors and change the values later
+    do{
         mainMenu.showPage();
 
 
@@ -89,9 +89,8 @@ int main(){
                 {
                 dataPage.showPage();
                 // need input validation here
-                dataSet.newData(atof(dataResponse1), atof(dataResponse2), atof(dataResponse3));
-                dataSet.generateData(atof(dataResponse4), atof(dataResponse5), atoi(dataResponse6));
-                if (dataSet.isGenerated()){
+                dataSet.deleteData();
+                if(dataSet.generateData(atof(dataResponse4), atof(dataResponse5), atof(dataResponse1),atof(dataResponse2), atoi(dataResponse3),atof(dataResponse6))){
                     dataSuccess.showPage();
                 }
                 else{
@@ -105,15 +104,16 @@ int main(){
             case 2:
                 {
                 if (dataSet.isGenerated()){
-                    // somewhere after this is cause of crash
-                    model.newInputSet(dataSet);
-                    model.train();
-                    if (model.isTrained()){
+                    model.newInputSet(dataSet.getCopy());
+
+                    
+                    if(model.train()){
                         trainingSuccess.showPage();
                     }
                     else{
                         trainingFailure.showPage();
                     }
+                    
                 }
                 else{
                     // need error here
