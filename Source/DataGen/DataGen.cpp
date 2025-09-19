@@ -106,10 +106,32 @@ class DataGen{
         dataGenerated = true;
     }
 
-    void newData(float m, float b, float size){// must add way to delete old data and refresh, this is temporary
+    void newData(float m, float b, float size){// causes crash when used more than once???
+        if (dataGenerated != false){
+            cursor = firstExample->nextExample;
+            DataList *temp = cursor;
+
+            do{
+                cursor = cursor->nextExample;
+                delete temp;
+                temp = cursor;
+            } while (cursor != NULL);
+        }
+
+        
         mVariable = m;
         bVariable = b;
         length = size;
+
+        if (size>1){
+            length = size;
+        }
+        else{
+            length = 1;
+        }
+
+        dataGenerated = false;
+
     }
 
     DataGen copyData(){
@@ -191,6 +213,9 @@ class DataGen{
         }
 
         length--;
+        if (length == 1){
+            dataGenerated = false;
+        }
     }
 
     void advanceCursor(){

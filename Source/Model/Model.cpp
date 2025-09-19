@@ -23,7 +23,8 @@ class Model{
 
         originalDataSet = inputSet;
 
-        refinedDataSet = inputSet.copyData();
+        //refinedDataSet = inputSet.copyData();
+        refinedDataSet = inputSet;
 
         data = true;
 
@@ -62,7 +63,8 @@ class Model{
     void newInputSet(DataGen dataSet){
         trained = false;
         originalDataSet = dataSet;
-        refinedDataSet = dataSet.copyData();
+        //refinedDataSet = dataSet.copyData();
+        refinedDataSet = dataSet;
         data = true;
     }
 
