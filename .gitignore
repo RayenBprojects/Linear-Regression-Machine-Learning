@@ -1,0 +1,35 @@
+# Prerequisites
+
+
+# Compiled Object files
+
+
+# Precompiled Headers
+
+
+# Linker files
+
+
+# Debugger Files
+
+
+# Compiled Dynamic libraries
+
+
+# Fortran module files
+
+
+# Compiled Static libraries
+
+
+# Executables
+*.exe
+
+
+# debug information files
+
+
+# Environment Folder
+.vscode/
+
+Source/testing.exe

@@ -4,7 +4,7 @@
 #include <iostream>
 using namespace std;
 
-class DataList{
+struct DataList{
     private: 
 
     friend class DataGen;
@@ -24,60 +24,67 @@ class DataList{
     DataList *nextExample;
 };
 
+/*
+NEVER pass DataGen object by value, use the getCopy() method instead. 
+Passing by value will cause the deconstructor to delete all data examples when out of scope.
+This is a problem because even if passed by value, the data example addresses are the same.
+getCopy() returns another dataset with examples copied from the first.
+*/
 class DataGen{
     public:
 
-    DataGen(float m = 0, float b = 0, int size = 1){
-        mVariable = m;
-        bVariable = b;
-        if (size>1){
-            length = size;
-        }
-        else{
-            length = 1;
-        }
+    DataGen(){
+        mVariable = 0;
+        bVariable = 0;
+        length = 0;
 
         dataGenerated = false;
 
         firstExample = NULL;
         cursor = NULL;
-
-        while (firstExample == NULL){
-            firstExample = new DataList();
-        }
-        cursor = firstExample;
     }
 
     ~DataGen(){
-        if (dataGenerated != false){
+        if (dataGenerated == true){
             cursor = firstExample;
-            DataList *temp = cursor;
 
-            do{
+            while(cursor != NULL){
+                DataList *temp = cursor;
                 cursor = cursor->nextExample;
                 delete temp;
-                temp = cursor;
-            } while (cursor != NULL);
-        }
-        else{
-            delete firstExample;
+            }
         }
     }
 
-    void generateData(float firstFeature, float lastFeature, float outlierProb = 1){
-        if (dataGenerated || firstFeature > lastFeature){
-            return;
+    bool generateData(float firstFeature, float lastFeature, float m, float b, int size, float outlierProb = 0){
+        if (dataGenerated || firstFeature >= lastFeature || size < 2 || outlierProb < 0){
+            return false;
         }
 
-        cursor = firstExample;
-
+        DataList *cursor2; //trails behind cursor
+        length = size;
+        mVariable= m;
+        bVariable = b;
         float range = fabs(((mVariable * lastFeature + bVariable)-(mVariable * firstFeature + bVariable)));
         srand(time(NULL));
-
-        float i=firstFeature;;
+        
+        float i=firstFeature;
         for (int n = 0 ; n < length ; n++){
+            cursor = NULL;
+            while (cursor == NULL){
+                cursor = new DataList;
+            }
+            if (n == 0){
+                firstExample = cursor;
+                cursor2 =cursor;
+            }
+            else{
+                cursor2->nextExample = cursor;
+                cursor2 = cursor;
+            }
 
-            cursor->xFeature = n;
+            cursor->xFeature = i;
+
             if (float(rand()%101) >= (101-outlierProb)){
                 if (rand()%2 == 1){
                     cursor->yLabel = mVariable * i + bVariable + range * ((float(rand()%6) + 5)/100);
@@ -95,55 +102,53 @@ class DataGen{
                 }
             }
 
-            if (n+1 != length){
-                cursor->nextExample = new DataList();
-                cursor = cursor ->nextExample;
-            }
             i+= (lastFeature-firstFeature)/((float)(length-1));
+            
         }
         
         cursor = firstExample;
+
         dataGenerated = true;
+
+        return true;
     }
 
-    void newData(float m, float b, float size){// must add way to delete old data and refresh, this is temporary
-        mVariable = m;
-        bVariable = b;
-        length = size;
-    }
+    bool deleteData(){
+        if (dataGenerated == true){
+            cursor = firstExample;
 
-    DataGen copyData(){
-        DataGen copyData(mVariable, bVariable, length);
-        DataList *tempCursor = NULL;
-        DataList *copyCursor = NULL;
-
-        if(!dataGenerated){
-            return copyData;
-        }
-
-        tempCursor = firstExample->nextExample;
-        while(copyCursor == NULL){
-            copyCursor = new DataList;
-        }
-
-        copyData.firstExample->xFeature=firstExample->xFeature;
-        copyData.firstExample->yLabel=firstExample->yLabel;
-        copyData.firstExample->nextExample=copyCursor;
-        
-
-        for (int i = 0 ; i < length-1 ; i++){
-            copyCursor->xFeature=tempCursor->xFeature;
-            copyCursor->yLabel=tempCursor->yLabel;
-
-            if (i == length -2){
-                while(copyCursor->nextExample == NULL){
-                    copyCursor->nextExample= new DataList;
-                }
-                copyCursor = copyCursor->nextExample;
-                tempCursor=tempCursor->nextExample;
+            while(cursor != NULL){
+                DataList *temp = cursor;
+                cursor = cursor->nextExample;
+                delete temp;
             }
+
+            cursor = NULL;
+            firstExample = NULL;
+            dataGenerated = false;
+            return true;
         }
-        return copyData;
+        else{
+            return false;
+        }
+    }
+
+    int getLength(){
+        return length;
+    }
+
+    bool advanceCursor(){
+        if (dataGenerated == true && cursor->nextExample != NULL){
+            cursor = cursor->nextExample;
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    void resetCursor(){
+        cursor = firstExample;
     }
 
     float getFeature(){
@@ -152,55 +157,6 @@ class DataGen{
 
     float getLabel(){
         return cursor->yLabel;
-    }
-
-    int getLength(){
-        return length;
-    }
-
-    void removeExample(float feature){
-        if(!dataGenerated && length <= 1){
-            return;
-        }
-        DataList *tempCursor = firstExample;
-        DataList *tempCursor2 = firstExample->nextExample;
-
-        if(tempCursor->xFeature == feature){
-            delete tempCursor;
-        }
-        else{
-            while(tempCursor2 != NULL){
-                if (tempCursor2-> xFeature == feature){
-                    tempCursor->nextExample=tempCursor2->nextExample;
-                    if (cursor == tempCursor2){
-                        if (tempCursor2->nextExample != NULL){ // if cursor happens to be on the example that's getting deleted, it will try to move forward. If not possible, it will move back
-                            cursor = tempCursor2->nextExample;
-                        }
-                        else{
-                            cursor = tempCursor;
-                        }
-                    }
-                    delete tempCursor2;
-                    tempCursor2 = NULL;
-                }
-                else{
-                    tempCursor2=tempCursor2->nextExample;
-                    tempCursor=tempCursor->nextExample;
-                }
-            }
-        }
-
-        length--;
-    }
-
-    void advanceCursor(){
-        if (cursor->nextExample != NULL){
-            cursor = cursor->nextExample;
-        }
-    }
-
-    void resetCursor(){
-        cursor = firstExample;
     }
 
     bool endOfData(){
@@ -216,11 +172,52 @@ class DataGen{
         return dataGenerated;
     }
 
+    DataGen getCopy(){
+        DataGen copy;
+        if(!dataGenerated){
+            return copy;
+        }
+        else{
+                DataList* cursor2 = firstExample;
+                while(cursor2 != NULL){
+                    DataList* temp = NULL;
+                    while(temp == NULL){
+                        temp = new DataList(cursor2->xFeature,cursor2->yLabel);
+                    }
+                    copy.addExample(temp);
+
+                    cursor2 = cursor2->nextExample;
+                }
+                copy.mVariable = mVariable;
+                copy.bVariable = bVariable;
+                return copy;
+        }
+    }
+
     private:
+
+    void addExample(DataList* newExample){
+        if(!dataGenerated){
+            firstExample = newExample;
+            cursor = firstExample;
+            length = 1;
+            dataGenerated = true;
+        }
+        else{
+            DataList* cursor2 = firstExample;
+            while(cursor2->nextExample != NULL){
+                cursor2 = cursor2->nextExample;
+            }
+            cursor2->nextExample = newExample;
+            length++;
+            dataGenerated = true;
+        }
+
+    }
 
     float mVariable; // as in y = mx + b
 
-    float bVariable; // as in y = mx + bw
+    float bVariable; // as in y = mx + b
 
     DataList *firstExample;
 
